@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Колесо Фортуны</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+        }
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            transform: rotate(0deg);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        .spin-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .spin-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎡 Колесо Фортуны</h2>
+    <div class="wheel-container">
+        <div class="wheel" id="wheel">
+            <!-- Сектора будут добавлены через JS -->
+        </div>
+    </div>
+    <button class="spin-btn" id="spinBtn">Крутить!</button>
+
+    <script>
+        const sectors = [
+            { text: "10 DP", color: "#FF6384" },
+            { text: "20 DP", color: "#36A2EB" },
+            { text: "50 DP", color: "#FFCE56" },
+            { text: "100 DP", color: "#4BC0C0" },
+            { text: "Повезёт в другой раз", color: "#9966FF" },
+        ];
+
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spinBtn');
+
+        // Создаём сектора колеса
+        function createWheel() {
+            const angle = 360 / sectors.length;
+            sectors.forEach((sector, i) => {
+                const section = document.createElement('div');
+                section.className = 'section';
+                section.style.transform = `rotate(${angle * i}deg)`;
+                section.style.backgroundColor = sector.color;
+                section.innerHTML = `<span style="transform: rotate(${angle / 2}deg)">${sector.text}</span>`;
+                wheel.appendChild(section);
+            });
+        }
+
+        // Запуск вращения
+        spinBtn.addEventListener('click', () => {
+            spinBtn.disabled = true;
+            const spins = 5 + Math.floor(Math.random() * 5); // 5-10 оборотов
+            const winnerIndex = Math.floor(Math.random() * sectors.length);
+            const degrees = spins * 360 + (winnerIndex * (360 / sectors.length));
+
+            wheel.style.transform = `rotate(${-degrees}deg)`;
+
+            setTimeout(() => {
+                alert(`🎉 Вы выиграли: ${sectors[winnerIndex].text}`);
+                spinBtn.disabled = false;
+                
+                // Отправляем результат в бота (Telegram WebApp API)
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.sendData(JSON.stringify({
+                        prize: sectors[winnerIndex].text
+                    }));
+                }
+            }, 4000);
+        });
+
+        createWheel();
+    </script>
+</body>
+</html>
